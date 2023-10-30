@@ -1,3 +1,28 @@
+lirc (0.10.1-7.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Add patch to fix FTBFS with new yaml (Closes: #1026505)
+
+ -- Nilesh Patra <nilesh@debian.org>  Wed, 28 Dec 2022 16:55:42 +0530
+
+lirc (0.10.1-7.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * debian/patches: Add patch to support passing MODINFO to configure.
+  * debian/rules: Pass MODINFO and SH_PATH to configure. The paths to "modinfo"
+    and "sh" may vary as either located in /bin and /sbin or in /usr/bin and
+    /usr/sbin if the system is configured as a usrmerge system. Use the
+    non-usrmerge paths for the most compatible location (closes: #979021).
+
+ -- Micha Lenk <micha@debian.org>  Sun, 16 Oct 2022 13:31:28 +0200
+
+lirc (0.10.1-7) unstable; urgency=medium
+
+  * Add patch from Fedora for failing tests. Closes: #1009389
+  * Add patch avoiding build path in docs. Closes: #961954
+
+ -- Alec Leamas <leamas.alec@gmail.com>  Thu, 12 May 2022 21:29:00 +0200
+
 lirc (0.10.1-6.3) unstable; urgency=medium
 
   * Non-maintainer upload.

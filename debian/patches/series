@@ -3,5 +3,9 @@
 0003-logging-Don-t-use-broken-LOG_CONS-syslog-flag.patch
 0004-lircd-Fix-connect-option-parsing-error-343.patch
 0005-systemd-support-Notify-systemd-on-successful-startup.patch
-lirc-gpio-ir-0.10.patch
-python3.8.diff
+0006-doxyfile-Don-t-include-full-pathname-961954.patch
+0007-lirc-gpio-ir-0.10.patch
+0008-python3.8.diff
+0009-Replace-the-obsolete-get_event_loop-with-get_running.patch
+0010-Patch-configure.ac-to-support-passing-MODINFO.patch
+0011-yaml.load.diff

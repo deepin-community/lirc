@@ -1,0 +1,28 @@
+From: Vagrant Cascadian <vagrant@reproducible-builds.org>
+Date: Sat, 2 Jan 2021 01:03:10 +0000
+Subject: Patch configure.ac to support passing MODINFO.
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=979021
+Bug: https://sourceforge.net/p/lirc/tickets/374/
+Reviewed-by: Simon McVittie <smcv@debian.org>
+Last-Update: 2022-10-16
+
+---
+ configure.ac | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 58347d8..1d910b0 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -25,8 +25,6 @@ AC_CHECK_PROGS([MODINFO], [modinfo], [no], [$PATH:/sbin:/usr/sbin])
+ if test x$MODINFO = xno; then
+   AC_MSG_WARN(["No modinfo command found - skipping kernel drivers."])
+   MODINFO="false"
+-else
+-  MODINFO=$( PATH=$PATH:/sbin:/usr/sbin which modinfo )
+ fi
+ AC_SUBST(MODINFO)
+ AC_CHECK_PROG([PKGCONFIG],[pkg-config],[yes],[no])
+-- 
+2.20.1
+
