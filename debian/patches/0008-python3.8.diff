@@ -1,5 +1,14 @@
-Index: b/python-pkg/lirc/client.py
+From: Debian Lirc Team <team+debian-lirc@tracker.debian.org>
+Date: Thu, 12 May 2022 21:07:56 +0200
+Subject: python3.8
+
 ===================================================================
+---
+ python-pkg/lirc/client.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/python-pkg/lirc/client.py b/python-pkg/lirc/client.py
+index 7e069a5..482913c 100644
 --- a/python-pkg/lirc/client.py
 +++ b/python-pkg/lirc/client.py
 @@ -219,10 +219,10 @@ class RawConnection(AbstractConnection):
