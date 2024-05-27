@@ -10,7 +10,7 @@ diff --git a/Makefile.am b/Makefile.am
 index 9f3dd14..7eeb1cf 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -80,6 +80,7 @@ py_PYTHON               = python-pkg/lirc/__init__.py \
+@@ -87,6 +87,7 @@ py_PYTHON               = python-pkg/lirc/__init__.py \
                            python-pkg/lirc/database.py \
                            python-pkg/lirc/paths.py
  

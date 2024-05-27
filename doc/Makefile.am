@@ -1,8 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
-CLEANFILES              = man/* html/* man-html/* driver-toc.xsl table.html \
-                          api-docs.tar.gz NEWS.txt lirc.hwdb table.html \
+CLEANFILES              = man/* html/* man-html/* driver-toc.xsl \
+                          api-docs.tar.gz NEWS.txt \
                           doxygen*warning* ext-driver-toc.xsl
 
 EXTRA_DIST              = Doxyfile manpage.xsl make-driver-toc.sh \
@@ -23,7 +23,10 @@ API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.dox \
                           $(LIB_SRC)/*.doxhead
 
-dist_noinst_SCRIPTS     = data2table data2hwdb
+dist_bin_SCRIPTS        = lirc-data2table
+
+datadocdir              = $(pkgdatadir)/doc
+datadoc_DATA            = docpage.xsl
 
 manpage_html            =
 man_sources             =
@@ -49,19 +52,15 @@ plugindocsdir           = $(docdir)/plugindocs
 dist_plugindocs_DATA    = README $(pluginfiles)
 
 website_htmldir         = $(docdir)/lirc.org/html
-nodist_website_html_DATA  = $(generated_html) \
-                          $(generated_plugindocs) \
-                          NEWS.txt html-source/lirc.css
-
+dist_website_html_DATA  = table.html
+nodist_website_html_DATA  \
+                        = $(generated_html) \
+                        $(generated_plugindocs) \
+                        NEWS.txt html-source/lirc.css
 
 if HAVE_MAN2HTML
-nodist_website_html_DATA  += $(manpage_html)
-endif
-
-if !IS_CROSS_COMPILE
-if HAVE_PYMOD_YAML
-nodist_website_html_DATA  += table.html
-endif
+nodist_website_html_DATA  \
+                        += $(manpage_html)
 endif
 
 vardocsdir              = $(localstatedir)/lib/lirc/plugins
@@ -76,28 +75,15 @@ imagedir                = $(docdir)/images
 
 htmldir                 = $(docdir)/html
 
-dist_html_DATA          = html-source/lirc.css
+dist_html_DATA          = html-source/lirc.css table.html
 nodist_html_DATA        =
-
-if !IS_CROSS_COMPILE
-
-if HAVE_PYMOD_YAML
-nodist_html_DATA        += table.html
-endif
-
-if HAVE_PYMOD_YAML
-nodist_pkgdata_DATA     = lirc.hwdb
-endif
-
-endif ## CROSS_COMPILE
 
 dist_noinst_DATA        = $(man_sources) $(html_sources) $(plugindocs)
 
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
 
-
-install-data-hook:
+install-apidocs:
 if HAVE_DOXYGEN
 	tar -C $(DESTDIR)$(websitedir) \
 	    -xf $(DESTDIR)$(docdir)/api-docs.tar.gz && \
@@ -109,6 +95,9 @@ if HAVE_DOXYGEN
 else
 	ln -sf html/no-api-docs.html $(DESTDIR)$(websitedir)/api-docs
 endif
+
+
+install-data-hook: install-apidocs
 	cd $(DESTDIR)$(websitedir)/api-docs; ln -sf html/index.html .
 	$(SED) -i '/class="footer"/,/p>/d' $(DESTDIR)$(plugindocsdir)/page.xsl
 	$(PYTHON) $(srcdir)/make_rel_symlink.py \
@@ -117,6 +106,9 @@ endif
 	    $(DESTDIR)$(vardocsdir)/index.html \
 	    $(DESTDIR)$(website_htmldir)/plugins-index.html
 	cp $(srcdir)/plugindocs.mk $(DESTDIR)$(plugindocsdir)/Makefile
+	$(SED) -e 's|$(abs_srcdir)|$(datadocdir)|' \
+	       -e 's|$(abs_builddir)|$(docdir)/plugindocs|' \
+	    -i $(DESTDIR)$(datadocdir)/docpage.xsl
 
 fix-urls: .phony
 	sh $(srcdir)/fix-urls.sh $(DESTDIR)$(websitedir)
@@ -145,20 +137,6 @@ plugins.index.html: $(srcdir)/empty_toc.tmpl
 docpage.xsl: $(abs_builddir)/driver-toc.xsl
 
 $(srcdir)/manpage.xsl: $(abs_builddir)/driver-toc.xsl
-
-table.html: docpage.xsl
-	test -e lirc || \
-	    ln -s $(top_srcdir)/tools/lirc-setup lirc 2>/dev/null || :
-	PYTHONPATH=$(top_builddir)/python-pkg/lirc \
-	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs \
-	        | xsltproc --html docpage.xsl - > table.html
-
-lirc.hwdb:
-	test -e lirc || \
-	    ln -s $(top_srcdir)/tools/lirc-setup lirc  2>/dev/null || :
-	PYTHONPATH=$(top_builddir)/python-pkg/lirc \
-	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs ../configs \
-	    > lirc.hwdb
 
 NEWS.txt: $(top_srcdir)/NEWS
 	cp -a $(top_srcdir)/NEWS $@
@@ -224,6 +202,7 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/lirc-config-tool.1 \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
                            $(srcdir)/man-source/lirc-lsremotes.1 \
+                           $(srcdir)/man-source/lirc-postinstall.1 \
                            $(srcdir)/man-source/lirc-setup.1 \
                            $(srcdir)/man-source/lircd-setup.8 \
                            $(srcdir)/man-source/lircd.8 \
@@ -301,6 +280,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/lirc-config-tool.1 \
                            man/lirc-lsplugins.1 \
                            man/lirc-lsremotes.1 \
+                           man/lirc-postinstall.1 \
                            man/lirc-setup.1 \
                            man/lircd.8 \
                            man/lircd-setup.8 \
@@ -339,6 +319,7 @@ manpage_html            += man-html/ircat.html \
                            man-html/lirc.html \
                            man-html/lirc-lsplugins.html \
                            man-html/lirc-lsremotes.html \
+                           man-html/lirc-postinstall.html \
                            man-html/lirc-setup.html \
                            man-html/lircd-setup.html \
                            man-html/lircd.html \

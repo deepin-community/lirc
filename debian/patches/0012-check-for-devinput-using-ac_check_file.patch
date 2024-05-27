@@ -1,0 +1,44 @@
+From: Helmut Grohne <helmut@subdivi.de>
+Date: Mon, 31 May 2021 13:09:56 +0200
+X-Dgit-Generated: 0.10.1-7.3 54cb42673c340f60f85764753d13da093aad4baf
+Subject: Check for /dev/input using AC_CHECK_FILE.
+
+(Closes: #989304)
+
+---
+
+diff --git a/configure.ac b/configure.ac
+index 1d910b0..66f96aa 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -288,29 +288,12 @@ else
+ fi
+ 
+ AC_MSG_CHECKING(for devinput)
+-AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+-  #include <unistd.h>
+-]],[[
+-  return access("/dev/input", R_OK) == 0 ? 0 : 1;
+-]])],[
++AC_CHECK_FILE([/dev/input],[
+   have_devinput="yes"
+   AC_MSG_RESULT(yes)
+ ],[
+   AC_MSG_RESULT(no)
+   have_devinput="no"
+-],[
+-  AS_IF([test x$DEVINPUT_HEADER = x -a x$enable_devinput = xyes], [
+-    AC_MSG_ERROR([
+-      cannot cross-compile with devinput without DEVINPUT_HEADER
+-      defined, giving up
+-    ])
+-  ])
+-  if test -n "$DEVINPUT_HEADER" ; then
+-    have_devinput="yes"
+-  else
+-    have_devinput="no"
+-  fi
+-  AC_MSG_RESULT(yes)
+ ])
+ 
+ 

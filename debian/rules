@@ -1,9 +1,14 @@
 #!/usr/bin/make -f
 
 include /usr/share/dpkg/architecture.mk
+include /usr/share/dpkg/pkg-info.mk
 
 export DEB_BUILD_MAINT_OPTIONS      = hardening=+all
-export DEB_LDFLAGS_MAINT_APPEND     = -Wl,--as-needed
+export _PYTHON_SYSCONFIGDATA_NAME:=_sysconfigdata__$(shell python3 -c 'import os; print(os.sys.platform)')_$(DEB_HOST_MULTIARCH)
+
+export LC_ALL=C.UTF-8
+
+export systemdsystemunitdir=$(shell pkg-config --variable=systemdsystemunitdir systemd | sed s,^/,,)
 
 %:
 	dh $@ --with python3
@@ -20,18 +25,16 @@ debian/lirc.preinst: debian/lirc.preinst.in
 
 override_dh_auto_configure: debian/lirc.preinst
 override_dh_auto_configure:
-ifeq ($(DEB_BUILD_ARCH_OS), linux)
+ifeq ($(DEB_HOST_ARCH_OS), linux)
 	dh_auto_configure -- \
 	    SH_PATH=/bin/sh \
 	    MODINFO=/sbin/modinfo \
-	    --enable-uinput --enable-devinput \
-	    --enable-silent-rules
+	    --enable-uinput --enable-devinput
 else
 	dh_auto_configure -- \
 	    SH_PATH=/bin/sh \
-	    MODINFO=/sbin/modinfo \
-	    --disable-uinput --disable-devinput \
-	    --enable-silent-rules
+	    MODINFO= \
+	    --disable-uinput --disable-devinput
 endif
 
 
@@ -44,7 +47,7 @@ override_dh_auto_install:
 	find debian/tmp -name *.la -delete
 	rm -f debian/tmp/usr/share/doc/lirc/lirc.org/api-docs/api-docs
 	chmod 755 debian/tmp/usr/share/lirc/python-pkg/lirc/lirctool
-ifeq ($(DEB_BUILD_ARCH_OS), linux)
+ifeq ($(DEB_HOST_ARCH_OS), linux)
 	mkdir -p debian/tmp/usr/lib/tmpfiles.d
 	echo "d /run/lirc  0755  root  root  10d" \
 	    > debian/tmp/usr/lib/tmpfiles.d/lirc.conf
@@ -60,6 +63,9 @@ ifneq "nocheck"  "$(findstring nocheck,$(DEB_BUILD_OPTIONS))"
 	    kfreebsd* | gnu) \
 	        :  ;; \
 	    *)  \
+	        cd python-pkg/lirc; \
+		ln -s ../lib/.libs/_client.so .; \
+		cd ../..; \
 	        cd python-pkg/tests; \
 	        python3 -m unittest discover && rm backend.log \
 		;; \
@@ -67,7 +73,7 @@ ifneq "nocheck"  "$(findstring nocheck,$(DEB_BUILD_OPTIONS))"
 endif
 
 override_dh_installsystemd:
-ifeq ($(DEB_BUILD_ARCH_OS), linux)
+ifeq ($(DEB_HOST_ARCH_OS), linux)
 	dh_installsystemd -p lirc lircd.socket
 	dh_installsystemd -p lirc --no-enable --no-start lircd.service
 	dh_installsystemd -p lirc --no-enable --no-start irexec.service
@@ -75,8 +81,20 @@ ifeq ($(DEB_BUILD_ARCH_OS), linux)
 	dh_installsystemd -p lirc --no-enable --no-start lircd-uinput.service
 endif
 
-override_dh_install:
-	dh_install --fail-missing
+override_dh_install-arch:
+	dh_install -a
+	# Normalize python tarball
+	tar --extract --file debian/lirc/usr/share/lirc/lirc-$(DEB_VERSION_UPSTREAM).tar.gz
+	rm -v debian/lirc/usr/share/lirc/lirc-$(DEB_VERSION_UPSTREAM).tar.gz
+	tar --sort=name \
+		--mtime="@$(SOURCE_DATE_EPOCH)" \
+		--owner=0 --group=0 --numeric-owner \
+		--mode=u=rwX,go=rX \
+		--create \
+		--file debian/lirc/usr/share/lirc/lirc-$(DEB_VERSION_UPSTREAM).tar \
+		lirc-$(DEB_VERSION_UPSTREAM)
+	gzip --best --no-name debian/lirc/usr/share/lirc/lirc-$(DEB_VERSION_UPSTREAM).tar
+	rm -rvf lirc-$(DEB_VERSION_UPSTREAM)
 
 override_dh_installinit:
 	dh_installinit --package=lirc --name=lircd

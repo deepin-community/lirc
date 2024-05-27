@@ -1,7 +1,7 @@
-#! /usr/bin/dh-exec
+#!/usr/bin/dh-exec
 
 etc/lirc
-[linux-any] lib/systemd/*
+[linux-any] ${systemdsystemunitdir}
 [linux-any] usr/lib/tmpfiles.d/*
 [linux-any] usr/bin/lirc-make-devinput
 [linux-any] usr/bin/irpipe
@@ -17,9 +17,11 @@ usr/bin/irtestcase
 usr/bin/irpty
 usr/bin/irdb-get
 usr/bin/lircrcd
+usr/bin/lirc-data2table
 usr/bin/lirc-config-tool
 usr/bin/lirc-init-db
 usr/bin/lirc-lsremotes
+usr/bin/lirc-postinstall
 usr/bin/lirc-setup
 usr/bin/mode2
 usr/bin/irw
@@ -42,8 +44,9 @@ usr/share/man/man1/irsend.1*
 usr/share/man/man1/irrecord.1*
 usr/share/man/man1/pronto2lirc.1*
 usr/share/man/man1/irsimreceive.1*
-usr/share/man/man1/lirc-setup.1*
 usr/share/man/man1/lirc-lsremotes.1*
+usr/share/man/man1/lirc-postinstall.1*
+usr/share/man/man1/lirc-setup.1*
 [linux-any] usr/share/man/man1/lirc-make-devinput.1*
 usr/share/man/man1/mode2.1*
 usr/share/man/man1/irtestcase.1*

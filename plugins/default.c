@@ -31,11 +31,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#ifdef HAVE_KERNEL_LIRC_H
-#include <linux/lirc.h>
-#else
 #include "media/lirc.h"
-#endif
 
 #include "lirc_driver.h"
 
@@ -88,7 +84,7 @@ static const struct driver hw_default = {
 	.drvctl_func	= drvctl,
 	.readdata	= default_readdata,
 	.api_version	= 3,
-	.driver_version = "0.10.0",
+	.driver_version = "0.10.2",
 	.info		= "See file://" PLUGINDOCS "/default.html",
 	.device_hint    = "drvctl",
 };
@@ -123,7 +119,7 @@ static int is_rc(const char* s)
  * Given a directory in /sys/class/rc, check if it contains
  * a file called device. If so, write "lirc" to the protocols
  * file in same directory unless the 'lirc' protocol already
- * is enabled.
+ * is enabled, or the protocol is not present.
  *
  * rc_dir: directory specification like rc0, rc1, etc.
  * device: Device given to lirc,  like 'lirc0' (or /dev/lirc0).
@@ -133,10 +129,10 @@ static int is_rc(const char* s)
 static int visit_rc(const char* rc_dir, const char* device)
 {
 	char path[512];
-	char buff[128];
-	char* enabled = NULL;
+	char buff[256];
 	int fd;
 	int r;
+	const char *protocol = "none\n";
 
 	snprintf(path, sizeof(path), "/sys/class/rc/%s", rc_dir);
 	if (access(path, F_OK) != 0) {
@@ -156,30 +152,25 @@ static int visit_rc(const char* rc_dir, const char* device)
 		return -1;
 	}
 	r = read(fd, buff, sizeof(buff));
+	close(fd);
 	if (r < 0) {
 		log_debug("Cannot read from %s", path);
 		return -1;
 	}
-	if (strchr(buff, '[') != NULL) {
-		enabled = strchr(buff, '[') + 1;
-		if (strchr(buff, ']') != NULL)
-			*strchr(buff, ']') = '\0';
-		else
-			enabled = NULL;
-	}
-	if (enabled == NULL) {
-		log_warn("Cannot parse protocols %s", buff);
-	} else  if (strcmp(enabled, "lirc") == 0) {
-		log_info("[lirc] protocol is enabled");
-		return 0;
+	// ensure null terminator
+	buff[r] = 0;
+	// In pre-4.16 kernels, this enables the lirc decoder, which makes
+	// enables the lirc chardev. Post 4.16 it only disables the other
+	// protocols, just like "none".
+	if (strstr(buff, "lirc") != NULL) {
+		protocol = "lirc\n";
 	}
 	fd = open(path, O_WRONLY);
 	if (fd < 0) {
-		log_debug(
-			  "Cannot open protocol file for write: %s", path);
+		log_debug("Cannot open protocol file for write: %s", path);
 		return -1;
 	}
-	chk_write(fd, "lirc\n", 5);
+	chk_write(fd, protocol, 6);
 	log_notice("'lirc' written to protocols file %s", path);
 	close(fd);
 	return 0;

@@ -1,3 +1,113 @@
+lirc (0.10.2-0.6) unstable; urgency=medium
+
+  * Add back libsystemd-dev (Closes: #1062699)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Mon, 12 Feb 2024 11:47:28 +0100
+
+lirc (0.10.2-0.5) unstable; urgency=medium
+
+  * Non-maintainer upload.
+
+  [ Michael Biebl ]
+  * Update dependency to systemd-dev (Closes: #1060557)
+  [ Svante Signell, Samuel Thibault ]
+  * Fix build on hurd (Closes: #1060093)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Wed, 17 Jan 2024 14:21:20 +0100
+
+lirc (0.10.2-0.4) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Finally drop liblircclient-dev provided library.
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Mon, 08 Jan 2024 16:30:19 +0100
+
+lirc (0.10.2-0.3) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Add back libusb-dev, some plugins are not libusb-1.0 compatible
+    yet (Closes: #1060039)
+  * Update doc-file location
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Mon, 08 Jan 2024 13:57:04 +0100
+
+lirc (0.10.2-0.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Add symlink during tests helping test
+    code find _client.so library
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Tue, 02 Jan 2024 18:18:12 +0100
+
+lirc (0.10.2-0.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * New upstream release
+    (Closes: #1056311, Closes: #1025002, Closes: #1022021).
+  * Switch everywhere to libusb-1.0 (Closes: #810445)
+  * Drop patches now part of upstream codebase:
+    - 0003-logging-Don-t-use-broken-LOG_CONS-syslog-flag.patch
+    - 0004-lircd-Fix-connect-option-parsing-error-343.patch
+    - 0005-systemd-support-Notify-systemd-on-successful-startup.patch
+    - 0007-lirc-gpio-ir-0.10.patch
+    - 0008-python3.8.diff
+    - 0009-Replace-the-obsolete-get_event_loop-with-get_running.patch
+    - 0011-yaml.load.diff
+  * Refresh patches:
+    - 0001-lirc.org-Remove-non-free-advertising.patch
+    - 0002-lirc-setup-Fix-crash-on-start-on-missing-lirc.config.patch
+    - 0010-Patch-configure.ac-to-support-passing-MODINFO.patch
+    - check-for-devinput-using-ac_check_file.patch
+    - drop-ubuntu-hack.patch
+  * Add new binaries to lirc
+    - lirc-data2table
+    - lirc-postinstall
+  * Drop Break/Replaces, and transitional packages
+  * Drop old debian/lirc.maintscript script
+  * Mark -doc package as multiarch: foreign
+  * Rename patches
+  * Add proposed patch to fix zotac poll (Closes: #1014760)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Sun, 17 Dec 2023 08:47:03 +0100
+
+lirc (0.10.1-7.4) unstable; urgency=medium
+
+  * Drop lsb-base dependency, useless now
+  * Drop Ubuntu systemd hack, now the systemd pkgconf in Ubuntu is
+    fixed
+  * Drop wl-asneeded, now default
+  * Bump compat level to 13 and std-version to 4.6.2
+  * Add R^3: no
+  * Make sure dh_install is run with -a (Fixes FTBFS on arch:all)
+  * Drop --fail-missing
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Sat, 16 Dec 2023 18:35:11 +0100
+
+lirc (0.10.1-7.3) unstable; urgency=medium
+
+  [ Vagrant Cascadian ]
+  * Non-maintainer upload.
+  * tools: Do not embed build date and kernel version in various files.
+    (Closes: #979019)
+  * debian/rules: Run build in the C.UTF-8 locale. (Closes: #979023)
+
+  [ Helmut Grohne ]
+  * Build verbosely by default. (Closes: #988907)
+
+  [ Vagrant Cascadian ]
+  * debian/rules: Normalize shipped tarball of python source code.
+    (Closes: #979024)
+
+  [ Helmut Grohne ]
+  * Fix FTBFS when systemdsystemunitdir changes in systemd.pc.
+    (Closes: #1052309)
+  * Fix build vs host confusion. (Closes: #1052309)
+  * Check for /dev/input using AC_CHECK_FILE. (Closes: #989304)
+  * Multiarchify python Build-Depends. (Closes: #989304)
+  * Export _PYTHON_SYSCONFIGDATA_NAME for setup.py. (Closes: #989304)
+
+ -- Vagrant Cascadian <vagrant@reproducible-builds.org>  Tue, 05 Dec 2023 15:52:45 -0800
+
 lirc (0.10.1-7.2) unstable; urgency=medium
 
   * Non-maintainer upload.

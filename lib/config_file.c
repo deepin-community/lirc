@@ -35,11 +35,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-#ifdef HAVE_KERNEL_LIRC_H
-#include <linux/lirc.h>
-#else
 #include "media/lirc.h"
-#endif
 
 #include "lirc/lirc_log.h"
 #include "lirc/lirc_options.h"
@@ -71,7 +67,7 @@ struct void_array {
 typedef void* (*array_guest_func)(void* item, void* arg);
 
 
-#define LINE_LEN 1024
+#define LINE_LEN 4096
 #define MAX_INCLUDES 10
 
 const char* whitespace = " \t";
@@ -104,7 +100,6 @@ const struct flaglist all_flags[] = {
 	{ "RCMM",	   RCMM		 },
 	{ "SPACE_ENC",	   SPACE_ENC	 },
 	{ "SPACE_FIRST",   SPACE_FIRST	 },
-	{ "GOLDSTAR",	   GOLDSTAR	 },
 	{ "GRUNDIG",	   GRUNDIG	 },
 	{ "BO",		   BO		 },
 	{ "SERIAL",	   SERIAL	 },

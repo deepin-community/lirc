@@ -84,7 +84,7 @@ const struct driver hw_devinput = {
 	.drvctl_func	= drvctl,
 	.readdata	= NULL,
 	.api_version	= 4,
-	.driver_version = "0.10.0",
+	.driver_version = "0.10.2",
 	.info		= "See file://" PLUGINDOCS "/devinput.html",
 	.device_hint    = "drvctl"
 };
@@ -245,8 +245,7 @@ static int locate_default_device(char* errmsg, size_t size)
 	int r;
 	char* event;
 
-	r = glob("/sys/class/rc/rc0/input[0-9]*/event[0-9]*",
-		 0, NULL, &matches);
+	r = glob(DEV_PATTERN, 0, NULL, &matches);
 	if (r == GLOB_NOMATCH) {
 		strncpy(errmsg, "No /sys/class/rc/ devices found", size - 1);
 		log_notice("No input device available for devinput driver."

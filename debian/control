@@ -2,15 +2,16 @@ Source: lirc
 Section: utils
 Priority: optional
 Homepage: https://sf.net/p/lirc
-Standards-Version: 4.3.0
+Standards-Version: 4.6.2
 Maintainer: Debian Lirc Team <team+debian-lirc@tracker.debian.org>
 Uploaders:
   Stefan Lippers-Hollmann <s.l-h@gmx.de>,
   Alec Leamas <leamas.alec@gmail.com>
+Rules-Requires-Root: no
 Vcs-Git: https://gitlab.com/leamas/lirc.git
 Vcs-Browser: https://gitlab.com/leamas/lirc
 Build-Depends:
- debhelper (>= 11),
+ debhelper-compat (= 13),
  dh-exec,
  dh-python,
  doxygen,
@@ -18,28 +19,28 @@ Build-Depends:
  kmod [linux-any],
  libasound2-dev [linux-any kfreebsd-any],
  libftdi1-dev,
+ libpython3-dev (>= 3.5),
+ systemd-dev [linux-any],
  libsystemd-dev [linux-any],
  libudev-dev [linux-any],
- libusb-1.0-0-dev [!kfreebsd-any],
- libusb-dev[!kfreebsd-any],
+ libusb-dev,
+ libusb-1.0-0-dev,
  libx11-dev,
  man2html-base,
- pkg-config,
+ pkgconf,
  portaudio19-dev,
- python3-dev (>= 3.5),
+ python3-dev:any (>= 3.5),
  python3-setuptools,
- python3-yaml,
+ python3-yaml:native,
  socat [!hurd-any],
  systemd [linux-any],
  xsltproc
 # libjs-jquery
 
-
 Package: lirc
 Architecture: any
 Depends:
  liblirc0 (= ${binary:Version}),
- lsb-base (>= 3.0-6),
  python3,
  ${misc:Depends},
  ${python3:Depends},
@@ -56,47 +57,32 @@ Suggests:
  lirc-x,
  setserial,
  ir-keytable
-Breaks:
- lirc-modules-source (<<0.9~),
- lirc-svga (<<0.9~),
- inputlirc (<<19)
 Description: Infra-red remote control support - daemons and utils
  LIRC stands for 'Linux Infra-red Remote Control'.
  .
  This package provides the daemons and some utilities to support infra-red
  remote controls under Linux.
 
-
 Package: lirc-doc
 Architecture: all
+Multi-Arch: foreign
 Section: doc
 Depends:
  ${misc:Depends},
- lsb-base
 # libjs-jquery
-Replaces:
- lirc (<< 0.9.1)
-Breaks:
- lirc (<< 0.9.1)
 Description: Infra-red remote control support - website and manual docs
  LIRC stands for 'Linux Infra-red Remote Control'.
  .
  This package provides the documentation including manual, manpages and
  the public website.
 
-
 Package: liblirc0
 Architecture: any
 Multi-Arch: same
 Section: libs
-Replaces:
- lirc (<< 0.9.1)
 Depends:
  ${misc:Depends},
- ${shlibs:Depends},
- lsb-base
-Breaks:
- lirc (<< 0.9.1)
+ ${shlibs:Depends}
 Description: Infra-red remote control support - Run-time libraries
  LIRC stands for 'Linux Infra-red Remote Control'.
  .
@@ -104,37 +90,15 @@ Description: Infra-red remote control support - Run-time libraries
  (liblirc_client.so*), drivers (liblirc_driver.so*) and also internal
  LIRC applications (lirc_private.so*)
 
-
-Package: liblircclient0
-Architecture: any
-Section: libs
-Depends: liblirc-client0, ${misc:Depends}
-Description: Transitional placeholder for obsoleted liblircclient0
- Virtual, empty package used in the process of renaming liblircclient0
- to liblirc-client0.
-
-
-Package: liblircclient-dev
-Architecture: any
-Section: libdevel
-Depends: liblirc-dev, ${misc:Depends}
-Description: Transitional placeholder for obsoleted liblircclient-dev
- Virtual, empty package used in the process of incorporating
- liblircclient-dev in new package liblirc-dev.
-
-
 Package: liblirc-dev
 Architecture: any
 #Multi-Arch: same
 Section: libdevel
-Provides: liblircclient-dev
-Breaks: liblircclient-dev (<< 0.9.1)
-Replaces: liblircclient-dev (<< 0.9.1)
+#Provides: liblircclient-dev
 Depends:
  liblirc0 (= ${binary:Version}),
  liblirc-client0 (= ${binary:Version}),
- ${misc:Depends},
- lsb-base
+ ${misc:Depends}
 Description: Infra-red remote control support - development files
  LIRC stands for 'Linux Infra-red Remote Control'.
  .
@@ -143,25 +107,17 @@ Description: Infra-red remote control support - development files
  software. See the User Space Driver API and  Lirc Client API sections
  in the lirc manual available in lirc-doc.
 
-
 Package: liblirc-client0
 Architecture: any
 Multi-Arch: same
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Suggests: lirc
-Pre-Depends: ${misc:Pre-Depends}
-Breaks:
- inputlirc (<< 19),
- kradio (<< 4),
- liblircclient0 (<=0.9.4~pre1)
-Replaces: liblircclient0 (<=0.9.4~pre1)
 Description: infra-red remote control support - client library
  LIRC stands for 'Linux Infra-red Remote Control'.
  .
  This package provides a library with functions to support remote
  controls via LIRC in programs such as xawtv.
-
 
 Package: lirc-x
 Architecture: any

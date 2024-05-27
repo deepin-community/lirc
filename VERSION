@@ -1,4 +1,4 @@
-VERSION="0.10.1"
-COMMIT="f180410"
-DATE="Sun Sep 10 10:51:24 2017 +0200"
-REFS=" (HEAD -> release-0.10, origin/release-0.10, origin/HEAD)"
+VERSION="0.10.2"
+COMMIT="2650b422"
+DATE="Tue Oct 4 09:01:58 2022 +0100"
+REFS=" (HEAD -> master, tag: lirc-0.10.2)"

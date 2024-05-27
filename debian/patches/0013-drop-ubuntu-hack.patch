@@ -1,0 +1,20 @@
+Description: This hack is not needed anymore with newer systemd
+Forwarded: <no>
+Reviewed-By: Gianfranco Costamagna <locutusofborg@debian.org>
+Last-Update: 2023-12-16
+
+--- lirc-0.10.1.orig/configure.ac
++++ lirc-0.10.1/configure.ac
+@@ -418,11 +418,7 @@ AC_CHECK_LIB([udev], [udev_device_new_fr
+ dnl Ubuntu's systemd pkg-config seems broken beyond repair. So:
+ kernelversion=`cat /proc/version || echo "non-linux"`
+ AS_CASE([$kernelversion],
+-  [*Ubuntu*],[
+-    AC_MSG_NOTICE([Hardwiring Ubuntu systemd setup])
+-    AC_SUBST([systemdsystemunitdir], [/lib/systemd/system])
+-    AM_CONDITIONAL([WITH_SYSTEMDSYSTEMUNITDIR], [true])
+-  ],[*],[
++  [*],[
+     SYSTEMD_SYSTEMUNITDIR
+ ])
+ 
