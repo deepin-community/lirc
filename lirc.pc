@@ -1,6 +1,6 @@
 Name: lirc
 Description: LIRC Linux Infrared Control client libs.
-Version: 0.10.1
+Version: 0.10.2
 
 prefix=/usr/local
 datarootdir=${prefix}/share

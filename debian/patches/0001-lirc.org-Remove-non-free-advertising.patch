@@ -13,7 +13,7 @@ diff --git a/doc/lirc.org/index.html b/doc/lirc.org/index.html
 index caa8ae9..0dd9619 100644
 --- a/doc/lirc.org/index.html
 +++ b/doc/lirc.org/index.html
-@@ -435,20 +435,6 @@
+@@ -437,20 +437,6 @@
                the complete list in the left pane.
              </p>
              <HR WIDTH="50%"><BR>

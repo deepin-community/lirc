@@ -5,5 +5,5 @@ Abstract:
 Section: Help
 
 Format: HTML
-Index: /usr/share/doc/lirc/lirc.org/html/index.html
+Index: /usr/share/doc/lirc/lirc.org/api-docs/html/index.html
 Files: /usr/share/doc/lirc/lirc.org/html/*.html /usr/share/doc/lirc/lirc.org/api-docs/html/*

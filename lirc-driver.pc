@@ -1,6 +1,6 @@
 Name: lirc
 Description: LIRC Linux Infrared Control userspace driver lib.
-Version: 0.10.1
+Version: 0.10.2
 
 PACKAGE_TARNAME=lirc
 prefix=/usr/local

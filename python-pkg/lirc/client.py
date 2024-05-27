@@ -32,6 +32,7 @@ import os
 import os.path
 import selectors
 import socket
+import sys
 import time
 
 import lirc.config
@@ -53,7 +54,10 @@ def get_default_socket_path() -> str:
     if 'LIRC_SOCKET_PATH' in os.environ:
         return os.environ['LIRC_SOCKET_PATH']
     path = lirc.config.SYSCONFDIR + '/lirc/lirc_options.conf'
-    parser = configparser.SafeConfigParser()
+    if sys.version_info < (3, 2):
+        parser = configparser.SafeConfigParser()
+    else:
+        parser = configparser.ConfigParser()
     try:
         parser.read(path)
     except configparser.Error:
@@ -219,17 +223,20 @@ class RawConnection(AbstractConnection):
     def readline(self, timeout: float = None) -> str:
         ''' Implements AbstractConnection.readline(). '''
         if timeout:
-            start = time.clock()
+            start = time.perf_counter()
         while b'\n' not in self._buffer:
             ready = self._select.select(
-                start + timeout - time.clock() if timeout else timeout)
+                start + timeout - time.perf_counter() if timeout else timeout)
             if ready == []:
                 if timeout:
                     raise TimeoutException(
                         "readline: no data within %f seconds" % timeout)
                 else:
                     return None
-            self._buffer += self._socket.recv(4096)
+            recv = self._socket.recv(4096)
+            if len(recv) == 0:
+                raise ConnectionResetError('Connection lost')
+            self._buffer += recv
         line, self._buffer = self._buffer.split(b'\n', 1)
         return line.decode('ascii', 'ignore')
 

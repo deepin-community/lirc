@@ -50,7 +50,12 @@ static const struct drv_enum_udev_what UDEV_KEYS[] = {
 	{0, 0}
 };
 
-const unsigned char IRTOY_COMMAND_TXSTART[] = { 0x24, 0x25, 0x26, 0x03 };
+const unsigned char IRTOY_COMMAND_TXSTART[] = { 0x03 };
+const unsigned char IRTOY_COMMAND24[] = { 0x24 };
+const unsigned char IRTOY_COMMAND25[] = { 0x25 };
+const unsigned char IRTOY_COMMAND26[] = { 0x26 };
+
+
 static const unsigned char cmdIOwrite = 0x30; // Sets the IO pins to ground (0) or +5volt (1).
 static const unsigned char cmdIOdirection = 0x31; // Sets the IO pins to input (1) or output (0).
 #define IRTOY_COMMAND_RESET 0
@@ -90,6 +95,7 @@ struct tag_irtoy_t {
 	int	protoVersion;
 	int	fd;
 	int	awaitingNewSig;
+	int	receivedLongPausesInARow;
 	int	pulse;
 };
 
@@ -110,7 +116,7 @@ static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static int drvctl_func(unsigned int cmd, void* arg);
 
 static lirc_t readdata(lirc_t timeout);
-
+static int irtoy_enter_samplemode(irtoy_t* dev);
 
 const struct driver hw_usbirtoy = {
 	.name		= "irtoy",
@@ -129,7 +135,7 @@ const struct driver hw_usbirtoy = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= readdata,
 	.api_version	= 3,
-	.driver_version = "0.10.0",
+	.driver_version = "0.10.2",
 	.info		= "See file://" PLUGINDOCS "/irtoy.html",
 	.device_hint    = "drvctl"
 };
@@ -279,8 +285,22 @@ static lirc_t irtoy_read(irtoy_t* dev, lirc_t timeout)
 	log_trace2("read_raw %02x%02x", dur[0], dur[1]);
 	if (dur[0] == 0xff && dur[1] == 0xff) {
 		dev->awaitingNewSig = 1;
+		dev->receivedLongPausesInARow++;
+
+		if (dev->receivedLongPausesInARow == 3) {
+			// According to IRToy documentation, when device sends three long pauses in a row, it
+			// signals buffer overflow (We were not reading it fast enough to process IR data in real time)
+			// When this happens, IRToy resets to IRMan mode. We need to put it back into sampling mode.
+			log_warn("Irtoy got buffer overflow. Resetting to sample mode...");
+			irtoy_enter_samplemode(dev);
+
+		}
+		log_trace("Got %d Long Pauses in a row so far", dev->receivedLongPausesInARow);
 		return IRTOY_LONGSPACE;
 	}
+
+	dev->receivedLongPausesInARow = 0;
+
 	data = (lirc_t)(IRTOY_UNIT * (double)(256 * dur[0] + dur[1]));
 	log_trace2("read_raw %d", data);
 
@@ -379,7 +399,8 @@ static int irtoy_enter_samplemode(irtoy_t* dev)
 		log_error("irtoy_enter_samplemode: couldn't write command");
 		return 0;
 	}
-
+	//delay needed before reading the command result from Irtoy / Irdroid
+	usleep(100000);
 	res = read_with_timeout(dev->fd, buf,
 				IRTOY_LEN_SAMPLEMODEPROTO,
 				IRTOY_TIMEOUT_SMODE_ENTER);
@@ -387,6 +408,28 @@ static int irtoy_enter_samplemode(irtoy_t* dev)
 		log_error("irtoy_enter_samplemode: Can't read command result");
 		return 0;
 	}
+	// See gist https://gist.github.com/Irdroid/384d5144d24cba7c94e58dde75388968
+	res = write(dev->fd, IRTOY_COMMAND24, sizeof(IRTOY_COMMAND24));
+
+	if (res != sizeof(IRTOY_COMMAND24)) {
+		log_error("irtoy_send: couldn't write command 24");
+		return 0;
+	}
+	usleep(20000);
+	res = write(dev->fd, IRTOY_COMMAND25, sizeof(IRTOY_COMMAND25));
+
+        if (res != sizeof(IRTOY_COMMAND25)) {
+                log_error("irtoy_send: couldn't write command 25");
+                return 0;
+        }
+	usleep(20000);
+	res = write(dev->fd, IRTOY_COMMAND26, sizeof(IRTOY_COMMAND26));
+
+        if (res != sizeof(IRTOY_COMMAND26)) {
+                log_error("irtoy_send: couldn't write command 26");
+                return 0;
+        }
+	usleep(20000);
 
 	buf[IRTOY_LEN_SAMPLEMODEPROTO] = 0;
 	if (buf[0] != IRTOY_REPLY_SAMPLEMODEPROTO) {
@@ -415,6 +458,7 @@ static irtoy_t* irtoy_hw_init(int fd)
 	dev->awaitingNewSig = 1;
 	dev->fd = fd;
 	dev->pulse = 1;
+	dev->receivedLongPausesInARow = 0;
 
 	irtoy_readflush(dev, IRTOY_TIMEOUT_FLUSH);
 

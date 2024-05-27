@@ -1,8 +1,6 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 
-#ifndef ROOT_CONFIG_H
-#define ROOT_CONFIG_H
 #include     "paths.h"
 
 
@@ -51,9 +49,6 @@
 /* Define to 1 if you have the <IOKit/IOCFPlugIn.h> header file. */
 #undef HAVE_IOKIT_IOCFPLUGIN_H
 
-/* define if kernel-headers contains lirc.h */
-#undef HAVE_KERNEL_LIRC_H
-
 /* Define if the ALSA library is installed */
 #undef HAVE_LIBALSA
 
@@ -96,9 +91,6 @@
 /* Define to 1 if you have the <linux/ioctl.h> header file. */
 #undef HAVE_LINUX_IOCTL_H
 
-/* Define to 1 if you have the <linux/lirc.h> header file. */
-#undef HAVE_LINUX_LIRC_H
-
 /* defined if linux/sched.h is available */
 #undef HAVE_LINUX_SCHED_H
 
@@ -107,9 +99,6 @@
 
 /* Define to 1 if you have the <mach/mach_time.h> header file. */
 #undef HAVE_MACH_MACH_TIME_H
-
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
 
 /* Define to 1 if you have the `mkfifo' function. */
 #undef HAVE_MKFIFO
@@ -143,6 +132,9 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -234,10 +226,13 @@
 /* Path to shell, usually /bin/sh or /usr/bin/sh */
 #undef SH_PATH
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. This
+   macro is obsolete. */
 #undef TIME_WITH_SYS_TIME
 
 /* Version number of package */
@@ -286,7 +281,7 @@
    a type exists and the standard includes do not define it. */
 #undef int8_t
 
-/* Define to `int' if <sys/types.h> does not define. */
+/* Define as a signed integer type capable of holding a process identifier. */
 #undef pid_t
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
@@ -310,5 +305,4 @@
 
 
 #include     "lirc/lirc_config.h"
-#endif // ROOT_CONFIG_H
 

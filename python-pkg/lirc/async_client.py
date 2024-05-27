@@ -57,13 +57,17 @@ class AsyncConnection(object):
 
         def read_from_fd():
             ''' Read data from the connection fd and put into queue. '''
-            line = self._conn.readline(0)
-            if line:
-                asyncio.ensure_future(self._queue.put(line))
+            try:
+                line = self._conn.readline(0)
+                if line:
+                    asyncio.ensure_future(self._queue.put(line))
+            except Exception as e:
+                self.close()
+                self._queue.put_nowait(e)
 
         self._conn = connection
         self._loop = loop
-        self._queue = asyncio.Queue(loop=self._loop)
+        self._queue = asyncio.Queue()
         self._loop.add_reader(self._conn.fileno(), read_from_fd)
 
     def close(self):
@@ -72,7 +76,10 @@ class AsyncConnection(object):
 
     async def readline(self) -> str:
         ''' Asynchronous get next line from the connection. '''
-        return await self._queue.get()
+        line = await self._queue.get()
+        if isinstance(line, Exception):
+            raise line
+        return line
 
     def __aiter__(self):
         ''' Return async iterator. '''
@@ -80,7 +87,10 @@ class AsyncConnection(object):
 
     async def __anext__(self):
         ''' Implement async iterator.next(). '''
-        return await self._queue.get()
+        line = await self._queue.get()
+        if isinstance(line, Exception):
+            raise StopAsyncIteration
+        return line
 
     async def __aenter__(self):
         ''' Implement "async with". '''

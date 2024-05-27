@@ -1,9 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT([lirc], [0.10.1])
+AC_INIT([lirc], [0.10.2])
 AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([.])
 
 # support runstatedir
 DEFINE_RUNSTATEDIR
@@ -37,20 +38,24 @@ AC_CHECK_PROG([XSLTPROC],[xsltproc],[yes],[no])
 if test x$XSLTPROC != "xyes"; then
     AC_MSG_ERROR([xsltproc is required. It sometimes comes with libxml])
 fi
-AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
-AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
+AC_MSG_CHECKING([Checking for usable man2html])
+AM_CONDITIONAL(HAVE_MAN2HTML,[
+    man2html_cmd="man2html -r -M index.html doc/man-source/irexec.1"
+    test $($man2html_cmd 2>/dev/null | wc -l) -gt 100])
+AS_IF([test x$HAVE_MAN2HTML_TRUE = x],AC_MSG_RESULT([yes]),AC_MSG_RESULT([no]))
 AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])
 AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN = xyes)
 LT_INIT([disable-static])
 
 AM_PATH_PYTHON([3.1],,)
 PKG_CHECK_MODULES([PYTHON],[python-${PYTHON_VERSION}m],,[true])
-test -z "$PYTHON_LIBS" && \
+test -z "$PYTHON_CFLAGS" && \
     PKG_CHECK_MODULES([PYTHON], [python-$PYTHON_VERSION],,[true])
-test -n "$PYTHON_LIBS" || \
+test -n "$PYTHON_CFLAGS" || \
     AC_MSG_WARN([No python package found (missing devel package?)])
 python_version_nodots=$(echo $PYTHON_VERSION | tr -d '.')
-AM_CONDITIONAL(HAVE_PYTHON35, [test $python_version_nodots -ge 35])
+AM_CONDITIONAL(HAVE_PYTHON35, [test -n "$PYTHON_CFLAGS" && \
+			       test $python_version_nodots -ge 35])
 CFLAGS="$CFLAGS $PYTHON_CFLAGS"
 
 
@@ -198,8 +203,6 @@ AH_TEMPLATE([HAVE_LINUX_SCHED_H], [defined if linux/sched.h is available])
 
 AH_TEMPLATE([HAVE_SCSI], [defined if SCSI API is available])
 
-AH_TEMPLATE([HAVE_SCSI], [defined if SCSI API is available])
-
 AH_TEMPLATE([HAVE_SELECT], [defined if select(2) is available])
 
 AH_TEMPLATE([HAVE_SOUNDCARD], [defined if soundcard API is available])
@@ -207,8 +210,6 @@ AH_TEMPLATE([HAVE_SOUNDCARD], [defined if soundcard API is available])
 AH_TEMPLATE([HAVE_SYSTEMD], [defined if systemd API is available])
 
 AH_TEMPLATE([GETGROUPS_T], [type of argument 3 in getgrouplist()])
-
-AH_TEMPLATE([HAVE_KERNEL_LIRC_H], [define if kernel-headers contains lirc.h])
 
 AH_TEMPLATE([HAVE_MACH_MACH_TIME_H],
 	    [define if mach/mach_time.h is available (MacOS)])
@@ -222,11 +223,9 @@ AH_TEMPLATE([HAVE_LIBUDEV_H], [Define if libudev is installed])
 
 AH_TEMPLATE([HAVE_UTIL_H], [Define if util.h is installed])
 
-AH_TEMPLATE([HAVE_USB_H],
-        [Define if usb.h is installed])
+AH_TEMPLATE([HAVE_USB_H], [Define if usb.h is installed])
 
-AH_TEMPLATE([HAVE_LIBUSB_H],
-        [Define if libusb.h is installed])
+AH_TEMPLATE([HAVE_LIBUSB_H], [Define if libusb.h is installed])
 
 AH_TEMPLATE([VERSION_NODOTS],
         [Numeric version, m.v.r => 10000 * m + 100 * v + r])
@@ -364,15 +363,6 @@ AC_CHECK_HEADERS([linux/input.h],
                  [:],
                  [AC_MSG_WARN([Cannot find kernel headers])])
 
-dnl check if kernel-headers has lirc.h
-kernel_header_flags='-I$(top_srcdir)/include'
-AC_CHECK_HEADERS([linux/lirc.h], [
-  AC_DEFINE(HAVE_KERNEL_LIRC_H)
-  AC_SUBST(DRIVER_FLAGS, [-DHAVE_KERNEL_LIRC_H])
-  kernel_header_flags=''
-])
-AC_SUBST(kernel_header_flags)
-
 dnl creative_infracd driver requires linux scsi api
 AC_CHECK_HEADERS(scsi/sg.h,[ AC_DEFINE(HAVE_SCSI) ])
 
@@ -491,6 +481,11 @@ AC_ARG_VAR(HAVE_WORKING_POLL,[
 
 AC_ARG_VAR(SH_PATH, [On cross-compile: Path to shell, typically /bin/sh])
 
+AC_ARG_VAR(SETUPTOOLS_ENV,
+  [On cross-compile: Python setuptools wrapper environment variables]
+)
+
+
 suffix=$(echo "$VERSION" | sed 's/.*-//')
 AM_CONDITIONAL(DEVEL, [test x$suffix = xdevel])
 
@@ -511,14 +506,11 @@ AC_DEFINE(LIRC_OPTIONS_VAR, ["LIRC_OPTIONS_PATH"],[
         Environment variable overriding options file path])
 
 AH_TOP([
-#ifndef ROOT_CONFIG_H
-#define ROOT_CONFIG_H
 #include     "paths.h"
 ])
 
 AH_BOTTOM([
 #include     "lirc/lirc_config.h"
-#endif // ROOT_CONFIG_H
 ])
 
 dnl write these decisions out to the Makefiles
@@ -582,13 +574,9 @@ AX_REPORT_CONDITIONAL([HAVE_DEVINPUT])
 AX_REPORT_CONDITIONAL([WITH_SYSTEMDSYSTEMUNITDIR])
 AX_REPORT_CONDITIONAL([HAVE_PYTHON35])
 
-echo
-
 AS_IF([test x$HAVE_PYMOD_YAML != xyes], AC_MSG_WARN([
   python3-yaml is missing. lirc-setup will not work, table.html
-  and lirc.hwdb will not be created.
+  will not be created.
 ]))
-
-AS_IF([test $host != $build], AC_MSG_NOTICE([
-  Cross-compilation requires running lirc-init-db post-install script
-]))
+echo
+AC_MSG_NOTICE([Don't forget to run lirc-postinstall after "make install"])
